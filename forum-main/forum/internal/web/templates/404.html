@@ -1,0 +1,11 @@
+{{define "404.html"}}{{template "layout.html" .}}{{end}}
+{{define "title"}}Not Found{{end}}
+{{define "content"}}
+  <div class="card" style="text-align:center; padding:40px;">
+    <h1 class="error-code">404</h1>
+    <p style="color:var(--muted); margin-bottom:24px;">
+      We couldn’t find that page.
+    </p>
+    <a href="/" class="btn primary">Go Home</a>
+  </div>
+{{end}}

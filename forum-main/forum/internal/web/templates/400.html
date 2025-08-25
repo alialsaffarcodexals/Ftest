@@ -1,0 +1,14 @@
+{{define "400.html"}}{{template "layout.html" .}}{{end}}
+{{define "title"}}Bad Request{{end}}
+{{define "content"}}
+  <div class="card" style="text-align:center; padding:40px;">
+    <h1 class="error-code">400</h1>
+    <p style="color:var(--muted); margin-bottom:16px;">
+      The request was invalid.
+    </p>
+    {{if .Reason}}<p style="color:#eab308">{{.Reason}}</p>{{end}}
+    <div style="margin-top:16px">
+      <a href="/" class="btn">Back to Home</a>
+    </div>
+  </div>
+{{end}}

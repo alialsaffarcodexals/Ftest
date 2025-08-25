@@ -1,0 +1,20 @@
+{{define "login.html"}}{{template "layout.html" .}}{{end}}
+
+{{define "title"}}Login{{end}}
+{{define "content"}}
+<div class="card" style="max-width:480px; margin:0 auto;">
+  {{if .Flash}}
+    <div class="alert {{.Flash.Type}}">{{.Flash.Text}}</div>
+  {{end}}
+  <form method="post" action="/login">
+    <label>Email or Username</label>
+    <input type="text" name="identity" required>
+    <label>Password</label>
+    <input type="password" name="password" required>
+    {{if .Error}}
+      <p style="color:#f87171">{{.Error}}</p>
+    {{end}}
+    <div style="margin-top:10px"><button class="btn primary" type="submit">Login</button></div>
+  </form>
+</div>
+{{end}}
