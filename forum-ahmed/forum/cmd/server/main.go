@@ -96,19 +96,16 @@ func main() {
 	log.Fatal(http.ListenAndServe(":"+*addr, wrappedMux))
 }
 
-// Template loader
+// Template loader reads each HTML file in the directory individually.
+// It does not require a shared layout; each template is a complete page.
 func loadTemplates(dir string) (map[string]*template.Template, error) {
-	layout := filepath.Join(dir, "layout.html")
 	pages, err := filepath.Glob(filepath.Join(dir, "*.html"))
 	if err != nil {
 		return nil, err
 	}
 	m := make(map[string]*template.Template)
 	for _, page := range pages {
-		if filepath.Base(page) == "layout.html" {
-			continue
-		}
-		t, err := template.ParseFiles(layout, page)
+		t, err := template.ParseFiles(page)
 		if err != nil {
 			return nil, err
 		}
