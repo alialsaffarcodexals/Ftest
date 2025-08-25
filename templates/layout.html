@@ -1,0 +1,52 @@
+
+{{define "layout"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{if .Title}}{{.Title}} · {{end}}Forum Ahmed</title>
+	<link rel="stylesheet" href="/static/style.css">
+	<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self';">
+</head>
+<body class="bg">
+	<div class="container">
+		<div class="floating-shapes">
+			<div class="shape shape-1"></div>
+			<div class="shape shape-2"></div>
+			<div class="shape shape-3"></div>
+			<div class="shape shape-4"></div>
+		</div>
+
+		<header class="header">
+			<div class="logo-container">
+				<div class="logo-icon" aria-hidden="true">★</div>
+				<h1 class="logo-text">Forum Ahmed</h1>
+			</div>
+			<nav>
+				<a class="nav-link" href="/">Home</a>
+				<a class="nav-link" href="/posts/create">New Post</a>
+				{{if .UserID}}
+					<a class="nav-link" href="/?mine=1">My Posts</a>
+					<a class="nav-link" href="/?liked=1">Liked</a>
+					<a class="nav-link" href="/logout">Logout</a>
+				{{else}}
+					<a class="nav-link" href="/login">Login</a>
+					<a class="nav-link" href="/register">Register</a>
+				{{end}}
+			</nav>
+		</header>
+
+		{{if .Flash}}
+			<div class="flash {{.FlashType}}">{{.Flash}}</div>
+		{{end}}
+
+		<main class="main">
+			{{template "content" .}}
+		</main>
+
+		<footer class="footer"><small>Built with Go, HTML templates &amp; SQLite — No JS.</small></footer>
+	</div>
+</body>
+</html>
+{{end}}

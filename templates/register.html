@@ -1,0 +1,20 @@
+{{define "content"}}
+<section class="card">
+	<h2 class="card-title">Create account</h2>
+	<form method="POST" action="/register" class="form">
+		<label class="form-label">Email
+			<input class="form-input" type="email" name="email" required>
+		</label>
+		<label class="form-label">Username (≥ 6 chars)
+			<input class="form-input" type="text" name="username" required minlength="6">
+		</label>
+		<label class="form-label">Password
+			<input class="form-input" type="password" name="password" required minlength="6">
+		</label>
+		<label class="form-label">Confirm Password
+			<input class="form-input" type="password" name="confirm_password" required minlength="6">
+		</label>
+		<button class="btn primary" type="submit">Register</button>
+	</form>
+</section>
+{{end}}

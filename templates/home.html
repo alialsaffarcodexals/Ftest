@@ -1,0 +1,52 @@
+
+{{define "content"}}
+<section class="hero">
+	<h2 class="hero-title">Welcome to Forum Ahmed</h2>
+	<p class="hero-desc">Share posts, add comments, and react — all without JavaScript.</p>
+
+	<form method="GET" action="/" class="filters card">
+		<div style="display:grid; gap:.5rem;">
+			<strong>Categories</strong>
+			<div style="display:flex; flex-wrap:wrap; gap:.5rem;">
+				{{range .AllCategories}}
+					<label class="checkbox chip">
+						<input type="checkbox" name="category" value="{{.}}" {{if (index $.SelectedSet .)}}checked{{end}}> {{.}}
+					</label>
+				{{else}}
+					<em>No categories yet</em>
+				{{end}}
+			</div>
+		</div>
+		<div style="display:flex; gap:.5rem; align-items:center; margin-top:.5rem;">
+			<label class="checkbox">
+				<input type="checkbox" name="mine" value="1" {{if eq .Mine 1}}checked{{end}} {{if not .CanUseOwnerFilt}}disabled{{end}}> My posts
+			</label>
+			<label class="checkbox">
+				<input type="checkbox" name="liked" value="1" {{if eq .Liked 1}}checked{{end}} {{if not .CanUseOwnerFilt}}disabled{{end}}> My likes
+			</label>
+			<button class="btn" type="submit">Apply</button>
+		</div>
+	</form>
+</section>
+
+<section class="grid">
+	{{range .Posts}}
+	<article class="card">
+		<header class="post-header">
+			<h3 class="post-title"><a href="/post/{{.ID}}">{{.Title}}</a></h3>
+			<div class="post-meta">by {{.Author}} • {{.CreatedAt}}</div>
+			<div class="post-cats">
+				{{range .Categories}}<span class="chip">{{.}}</span>{{end}}
+			</div>
+		</header>
+		<p class="post-excerpt">{{.Content}}</p>
+		<footer class="post-footer">
+			<span class="badge">👍 {{.LikeCount}}</span>
+			<span class="badge">👎 {{.DislikeCount}}</span>
+		</footer>
+	</article>
+	{{else}}
+	<p>No posts yet.</p>
+	{{end}}
+</section>
+{{end}}

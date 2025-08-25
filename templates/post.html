@@ -1,0 +1,80 @@
+
+{{define "content"}}
+{{if .Post}}
+<article class="card">
+	<header class="post-header">
+		<h2 class="post-title">{{.Post.Title}}</h2>
+		<div class="post-meta">by {{.Post.Author}} • {{.Post.CreatedAt}}</div>
+		<div class="post-cats">{{range .Post.Categories}}<span class="chip">{{.}}</span>{{end}}</div>
+	</header>
+	<div class="post-body">{{.Post.Content}}</div>
+	<footer class="post-footer">
+		<form method="POST" action="/reaction" class="reaction-row">
+			<input type="hidden" name="target_type" value="post">
+			<input type="hidden" name="target_id" value="{{.Post.ID}}">
+			<button class="btn" name="value" value="1" {{if not .UserID}}disabled title="Login to react"{{end}}>👍 Like ({{.Post.LikeCount}})</button>
+			<button class="btn" name="value" value="-1" {{if not .UserID}}disabled title="Login to react"{{end}}>👎 Dislike ({{.Post.DislikeCount}})</button>
+		</form>
+	</footer>
+</article>
+
+<section class="card">
+	<h3 class="card-title">Comments</h3>
+	{{range .Comments}}
+		<div class="comment">
+			<div class="comment-meta">{{.Author}} • {{.CreatedAt}}</div>
+			<p>{{.Content}}</p>
+			<form method="POST" action="/reaction" class="reaction-row">
+				<input type="hidden" name="target_type" value="comment">
+				<input type="hidden" name="target_id" value="{{.ID}}">
+				<input type="hidden" name="post_id" value="{{.PostID}}">
+				<button class="btn small" name="value" value="1" {{if not $.UserID}}disabled{{end}}>👍 {{.LikeCount}}</button>
+				<button class="btn small" name="value" value="-1" {{if not $.UserID}}disabled{{end}}>👎 {{.DislikeCount}}</button>
+			</form>
+		</div>
+	{{else}}<p>No comments yet.</p>{{end}}
+</section>
+
+{{if .UserID}}
+<section class="card">
+	<h3 class="card-title">Add a comment</h3>
+	<form method="POST" action="/comment/create" class="form">
+		<input type="hidden" name="post_id" value="{{.Post.ID}}">
+		<label class="form-label">Comment
+			<textarea class="form-input" name="content" required rows="3"></textarea>
+		</label>
+		<button class="btn primary" type="submit">Comment</button>
+	</form>
+</section>
+{{end}}
+
+{{else}}
+<section class="card">
+	<h2 class="card-title">Create a new post</h2>
+	<form method="POST" action="/posts/create" class="form">
+		<label class="form-label">Title
+			<input class="form-input" type="text" name="title" required>
+		</label>
+		<label class="form-label">Content
+			<textarea class="form-input" name="content" rows="6" required></textarea>
+		</label>
+		<div>
+			<strong>Categories</strong>
+			<div style="display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.35rem;">
+				{{range .AllCategories}}
+					<label class="checkbox chip">
+						<input type="checkbox" name="categories" value="{{.}}"> {{.}}
+					</label>
+				{{else}}
+					<em>No categories yet</em>
+				{{end}}
+			</div>
+			<label class="form-label" style="margin-top:.5rem;">New category (optional)
+				<input class="form-input" name="new_category" placeholder="e.g. go">
+			</label>
+		</div>
+		<button class="btn primary" type="submit">Publish</button>
+	</form>
+</section>
+{{end}}
+{{end}}
