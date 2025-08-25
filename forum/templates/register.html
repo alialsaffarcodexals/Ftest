@@ -1,0 +1,19 @@
+{{define "register"}}
+{{template "layout" .}}
+{{end}}
+
+{{define "content"}}
+<section class="card fade">
+  <h2>Register</h2>
+  {{if .Error}}<div class="banner">{{.Error}}</div>{{end}}
+  {{if .Success}}<div class="banner success">{{.Success}}</div>{{end}}
+  <form method="POST" class="form">
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <input type="password" name="confirm" placeholder="Confirm Password" required>
+    <button class="btn primary" type="submit">Register</button>
+    <a href="/login" class="btn secondary">Login</a>
+  </form>
+</section>
+{{end}}

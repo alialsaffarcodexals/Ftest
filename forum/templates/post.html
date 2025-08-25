@@ -1,0 +1,38 @@
+{{define "post"}}
+{{template "layout" .}}
+{{end}}
+
+{{define "content"}}
+<article class="post-view fade">
+  <h1>{{.Post.Title}}</h1>
+  <div class="meta">By {{.Post.Author}} at {{.Post.Created}}</div>
+  <div class="body">{{.Post.Content}}</div>
+  <div class="likes">
+    <form method="POST" action="/like">
+      <input type="hidden" name="post_id" value="{{.Post.ID}}">
+      <button class="btn like" name="value" value="1">👍 {{.Likes}}</button>
+      <button class="btn like" name="value" value="-1">👎 {{.Dislikes}}</button>
+    </form>
+  </div>
+</article>
+<section class="comments fade">
+  <h2>Comments</h2>
+  {{range .Comments}}
+  <div class="comment-card">
+    <div class="author">{{.Author}}</div>
+    <div class="content">{{.Content}}</div>
+  </div>
+  {{else}}
+  <p>No comments.</p>
+  {{end}}
+</section>
+{{if .User}}
+<section class="comment-form fade">
+  <form method="POST" action="/comment">
+    <input type="hidden" name="post_id" value="{{.Post.ID}}">
+    <textarea name="content" required></textarea>
+    <button class="btn primary" type="submit">Comment</button>
+  </form>
+</section>
+{{end}}
+{{end}}
