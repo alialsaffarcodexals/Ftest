@@ -1,0 +1,26 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{block "title" .}}Forum{{end}}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+    <a href="/">Home</a>
+    {{if .User}}
+        <span>Welcome, {{.User.Username}}</span>
+        <a href="/post/new">New Post</a>
+        <a href="/logout">Logout</a>
+    {{else}}
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
+    {{end}}
+</header>
+<main>
+    {{template "content" .}}
+</main>
+</body>
+</html>
+{{end}}

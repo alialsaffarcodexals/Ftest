@@ -1,0 +1,36 @@
+{{define "title"}}{{.Post.Title}}{{end}}
+{{define "content"}}
+<article>
+    <h1>{{.Post.Title}}</h1>
+    <p>by {{.Post.Username}} in {{.Post.Category}}</p>
+    <p>{{.Post.Content}}</p>
+    <p>Likes: {{.Likes}} Dislikes: {{.Dislikes}}</p>
+    {{if .User}}
+    <form method="post" action="/post/{{.Post.ID}}/like">
+        <button name="value" value="1">Like</button>
+        <button name="value" value="-1">Dislike</button>
+    </form>
+    {{end}}
+</article>
+<section>
+<h2>Comments</h2>
+{{range .Comments}}
+<div>
+    <p>{{.Content}} — {{.Username}}</p>
+    <p>Likes: {{.Likes}} Dislikes: {{.Dislikes}}</p>
+    {{if $.User}}
+    <form method="post" action="/comment/{{.ID}}/like">
+        <button name="value" value="1">Like</button>
+        <button name="value" value="-1">Dislike</button>
+    </form>
+    {{end}}
+</div>
+{{else}}<p>No comments</p>{{end}}
+{{if .User}}
+<form method="post" action="/post/{{.Post.ID}}/comment">
+    <textarea name="content" rows="3" cols="40"></textarea><br>
+    <button type="submit">Comment</button>
+</form>
+{{end}}
+</section>
+{{end}}
