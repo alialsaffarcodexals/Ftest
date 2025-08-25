@@ -1,0 +1,24 @@
+{{define "home"}}
+{{template "layout" .}}
+{{end}}
+
+{{define "content"}}
+<section class="hero fade">
+  <div class="icon">💬</div>
+  <h1>Welcome to the Forum</h1>
+  <p>Discuss anything with the community.</p>
+  <a href="/register" class="btn primary">Get Started</a>
+  <a href="/" class="btn secondary">Learn More</a>
+</section>
+<section class="posts grid fade">
+  {{range .Posts}}
+  <article class="post-card">
+    <h3><a href="/post/{{.ID}}">{{.Title}}</a></h3>
+    <p>{{.Content}}</p>
+    <div class="meta">By {{.Author}}</div>
+  </article>
+  {{else}}
+  <p>No posts yet.</p>
+  {{end}}
+</section>
+{{end}}

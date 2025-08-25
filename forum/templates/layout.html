@@ -1,0 +1,23 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html lang="en" class="{{.Theme}}">
+<head>
+<meta charset="UTF-8">
+<title>{{.Title}}</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="bg">
+  <span class="circle"></span>
+  <span class="circle"></span>
+</div>
+<header class="header">
+  <a href="/" class="logo">Forum</a>
+  <a href="/toggle-theme" class="toggle">{{if eq .Theme "dark"}}☀️{{else}}🌙{{end}}</a>
+</header>
+<main>
+{{block "content" .}}{{end}}
+</main>
+</body>
+</html>
+{{end}}

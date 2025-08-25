@@ -1,0 +1,11 @@
+{{define "error"}}
+{{template "layout" .}}
+{{end}}
+
+{{define "content"}}
+<section class="error fade">
+  <h1>{{.Code}}</h1>
+  <p>{{.Message}}</p>
+  <a href="/" class="btn primary">Back Home</a>
+</section>
+{{end}}
