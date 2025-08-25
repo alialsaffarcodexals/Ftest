@@ -1,0 +1,14 @@
+{{define "title"}}Forum{{end}}
+{{define "content"}}
+<h1>Posts</h1>
+{{range .Posts}}
+<article>
+    <h2><a href="/post/{{.ID}}">{{.Title}}</a></h2>
+    <p>by {{.Username}} in {{.Category}}</p>
+    <p>{{.Content}}</p>
+    <p>Likes: {{.Likes}} Dislikes: {{.Dislikes}}</p>
+</article>
+{{else}}
+<p>No posts</p>
+{{end}}
+{{end}}
