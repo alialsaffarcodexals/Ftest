@@ -3,57 +3,33 @@ package main
 import (
 	"log"
 	"net/http"
-	"time"
 
-	"forum/handlers"
-	"forum/models"
+	"forum/utils"
+
+	_ "github.com/mattn/go-sqlite3" // SQLite3 driver
 )
 
 func main() {
-	// Init database + run schema
-	if err := models.InitDB("forum.db", "database/schema.sql"); err != nil {
-		log.Fatalf("db init: %v", err)
+	_, err := utils.DBInitialize("forum")
+	if err != nil {
+		log.Fatal("Failed to connect to database:", err)
 	}
 
-	mux := http.NewServeMux()
+	fs := http.FileServer(http.Dir("./static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	// Static assets
-	fs := http.FileServer(http.Dir("static"))
-	mux.Handle("/static/", http.StripPrefix("/static/", fs))
+	http.HandleFunc("/", utils.DefaultHandler)
+	http.HandleFunc("/home", utils.HomeHandler)
+	http.HandleFunc("/login", utils.LoginHandler)
+	http.HandleFunc("/logout", utils.LogoutHandler)
+	http.HandleFunc("/guest", utils.GuestHandler)
+	http.HandleFunc("/register", utils.RegisterHandler)
+	http.HandleFunc("/create-post", utils.CreatePostHandler)
+	http.HandleFunc("/post/", utils.PostHandler)
+	http.HandleFunc("/like", utils.LikeHandler)
+	http.HandleFunc("/dislike", utils.DislikeHandler)
+	http.HandleFunc("/filter", utils.FilterHandler)
 
-	// Public pages
-	mux.HandleFunc("/", handlers.Home) // list posts + filters
-	mux.HandleFunc("/login", handlers.Login)
-	mux.HandleFunc("/register", handlers.Register)
-	mux.HandleFunc("/logout", handlers.Logout)
-	mux.HandleFunc("/guest", handlers.Guest)
-
-	// Posts & comments (auth required in handlers)
-	mux.HandleFunc("/posts/create", handlers.CreatePost)
-	mux.HandleFunc("/post/", handlers.ViewPost) // /post/{id}
-	mux.HandleFunc("/comment/create", handlers.CreateComment)
-
-	// Likes
-	mux.HandleFunc("/reaction", handlers.Reaction) // like/dislike for posts & comments
-
-	// Errors test endpoints (optional)
-	mux.HandleFunc("/__400", func(w http.ResponseWriter, r *http.Request) { handlers.RenderHTTPError(w, 400, "Bad request (demo)") })
-	mux.HandleFunc("/__401", func(w http.ResponseWriter, r *http.Request) { handlers.RenderHTTPError(w, 401, "Unauthorized (demo)") })
-	mux.HandleFunc("/__402", func(w http.ResponseWriter, r *http.Request) { handlers.RenderHTTPError(w, 402, "Payment required (demo)") })
-	mux.HandleFunc("/__404", func(w http.ResponseWriter, r *http.Request) { handlers.RenderHTTPError(w, 404, "Page not found (demo)") })
-	mux.HandleFunc("/__429", func(w http.ResponseWriter, r *http.Request) { handlers.RenderHTTPError(w, 429, "Too many requests (demo)") })
-	mux.HandleFunc("/__500", func(w http.ResponseWriter, r *http.Request) { handlers.RenderHTTPError(w, 500, "Internal server error (demo)") })
-
-	srv := &http.Server{
-	Addr: ":8080",
-	Handler: handlers.WithTimeout( // <-- NEW
-		handlers.WithRateLimit(
-			handlers.WithSession(mux),
-		),
-	),
-	ReadHeaderTimeout: 5 * time.Second,
+	log.Println("Server running on http://localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
-	log.Println("Server starting on http://localhost:8080")
-	log.Fatal(srv.ListenAndServe())
-}
-

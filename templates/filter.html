@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Filter: {{.Category}}</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+<h2>{{.FilterLabel}}</h2>
+        </header>
+        <main class="home-main">
+            <h2>Posts in {{.Category}}</h2>
+            <div class="discussions-grid">
+                {{range .Posts}}
+                <article class="discussion-card">
+                    <a href="/post/{{.ID}}" class="discussion-title">{{.Title}}</a>
+                    <p class="discussion-excerpt">{{.Content}}</p>
+                    <small>By {{.Author}}</small>
+                </article>
+                {{else}}
+                <p>No posts in this category yet.</p>
+                {{end}}
+            </div>
+        </main>
+    </div>
+</body>
+</html>

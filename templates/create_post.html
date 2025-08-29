@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Post</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo-container">
+                <h1 class="logo-text">ForumHub</h1>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="login-card">
+                <div class="card-header">
+                    <h3 class="card-title">Create a New Post</h3>
+                </div>
+                <div class="card-content">
+                    <form class="login-form" method="POST" action="/create-post">
+                        <div class="form-group">
+                            <label class="form-label" for="title">Title</label>
+                            <input type="text" id="title" name="title" class="form-input" placeholder="Enter post title"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Categories (comma separated)</label>
+                            <input type="text" name="categories" class="form-input"
+                                placeholder="e.g. Development, Design">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="content">Content</label>
+                            <textarea id="content" name="content" class="form-input"
+                                placeholder="Write your post here..." rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="submit-btn">Publish</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

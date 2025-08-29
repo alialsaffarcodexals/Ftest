@@ -1,0 +1,274 @@
+You are an expert Go + SQLite + HTML/CSS engineer. Finish and fix this forum project without using any JavaScript. Only use Go, HTML, CSS, SQLite. Allowed packages: github.com/mattn/go-sqlite3, golang.org/x/crypto/bcrypt, and github.com/google/uuid. Do not add any other libs or JS. Do everything step-by-step exactly as instructed below.
+
+0) Project constraints & goals
+
+Languages: Go, HTML, CSS only.
+
+DB: SQLite.
+
+Packages allowed: sqlite3, bcrypt, uuid.
+
+No JavaScript anywhere (no <script>, onclick, onsubmit, localStorage, etc.). If current templates include JS, remove it and replace behavior with server-side.
+
+Implement a web forum that supports: register/login/logout with cookies + single active session; posts with categories; comments; like/dislike on posts and comments; filter by category, my posts, my liked posts; friendly error pages; Dockerization.
+
+1) Read current files (you will be given them)
+
+Use the existing structure as reference (examples):
+
+main.go registers handlers and static files. It currently points to many utils.*Handler routes. Confirm all routes exist and adjust for correct 404 behavior.
+
+go.mod, Makefile exist; add a Dockerfile (missing) and a .dockerignore.
+
+Templates in templates/: login.html, home.html, post.html, create_post.html, filter.html, register.html, error.html. Some use JS or have wrong content (e.g., post.html is actually a login layout). Fix them.
+
+Styles: static/styles.css (global). Unify templates to this CSS (remove per-page inline CSS where feasible).
+
+DB bootstrap: sql/tables.sql. Extend it exactly as instructed below.
+
+Utils & handlers: utils/*.go (cookies, DB init + SafeWriter, hashing/login, handlers, error renderer, types, uuid). Keep structure but fix issues listed below.
+
+2) Fix & complete the database
+
+2.1 Keep existing tables, then add what’s missing:
+
+Add unique indexes for users.email and users.username (enforce uniqueness at DB level).
+
+Add comment likes/dislikes via a new table:
+
+create table if not exists comment_interactions (
+    id integer primary key autoincrement,
+    user_uuid text not null,
+    comment_id integer not null,
+    liked boolean not null default 0,
+    disliked boolean not null default 0,
+    foreign key(user_uuid) references users(uuid),
+    foreign key(comment_id) references comments(id)
+);
+
+
+Create indexes to speed filters:
+
+create index if not exists idx_posts_author on posts(author_uuid);
+create index if not exists idx_interactions_post on interactions(post_id, user_uuid);
+create index if not exists idx_comment_interactions on comment_interactions(comment_id, user_uuid);
+create unique index if not exists idx_users_email on users(email);
+create unique index if not exists idx_users_username on users(username);
+
+
+Do not drop existing tables; append statements to sql/tables.sql so first run initializes everything. Confirm DBInitialize reads and executes this file (it already does).
+
+2.2 Keep lastseen as text (RFC3339). Ensure all inserts set a valid lastseen string (use time.Now().Format(time.RFC3339)), not a zero time.Time.
+
+3) Server routing & 404 behavior
+
+3.1 Keep existing registered routes, but change the root handler so it only redirects on the exact / path and returns 404 (error template) for any other unmatched path:
+
+Replace DefaultHandler with:
+
+If r.URL.Path == "/" → redirect to /login.
+
+Else → RenderError(..., 404).
+
+Keep all other http.HandleFunc lines for specific paths so unknown paths don’t get swallowed by /.
+
+4) Sessions & auth
+
+4.1 Cookies/session
+
+Keep cookie name user and expiry 1 hour. Already implemented; keep SetUserCookie, GetUserFromCookie, ClearUserCookie.
+
+CheckSession should parse lastseen as RFC3339, expire after 1 hour, clear cookie, set loggedin=0, and delete guest users only (already implemented). Verify it doesn’t delete registered users.
+
+4.2 Login/Register
+
+Register must reject duplicate email/username at DB level too (unique index). Keep bcrypt hashing.
+
+Login should keep “single active session” rule: if user already loggedin=1, return an error and show error page. (Already present; keep). Also ensure success path updates lastseen and loggedin=1.
+
+4.3 Logout
+
+POST /logout sets loggedin=0, clears cookie, redirects to /login. Keep as is.
+
+4.4 Guest
+
+GET /guest creates a guest user (notregistered=true), clears any prior user cookie, sets new cookie, redirect /home. Keep the current logic.
+
+5) Handlers: posts, comments, likes/dislikes, filters
+
+5.1 Create post
+
+Keep /create-post GET to render form; POST to insert posts + categories (comma-separated), creating categories if missing and joining via post_categories. This is already implemented—just ensure empty title/content are rejected and guests forbidden.
+
+5.2 View single post + comment
+
+/post/{id} GET loads: post (title, content, author), counts (post likes, post dislikes), list of comments with each comment’s like/dislike counts.
+
+/post/{id} POST adds a comment by registered users only; reject empty comments. (Already mostly done.) Add retrieval of per-comment like/dislike counts from comment_interactions.
+
+5.3 Likes/Dislikes for posts (already present)
+
+Ensure both endpoints are POST only:
+
+/like with form post_id
+
+/dislike with form post_id
+
+Before inserting, delete any previous interaction by same user on same post; then insert liked=1/disliked=0 (or vice-versa). Keep current logic.
+
+5.4 Likes/Dislikes for comments (add this)
+
+Add endpoints:
+
+POST /comment/like with form comment_id
+
+POST /comment/dislike with form comment_id
+
+For each: ensure logged-in registered user; delete any previous row by (user_uuid, comment_id); insert into comment_interactions with the right flags.
+
+5.5 Filters (already present)
+
+Keep /filter supporting:
+
+?category=Name → posts in category
+
+?filter=myposts → posts by current user
+
+?filter=mylikes → posts liked by current user
+Make sure the handler picks the correct branch and renders a template.
+
+5.6 Home feed
+
+/home must fetch posts, compute CommentCount, LikeCount, and provide the categories list for the filter select. Keep current logic. Ensure guests are flagged so “New Post” button hides.
+
+6) Templates (HTML only, no JS)
+
+6.1 Remove all JavaScript:
+
+home.html: remove <script> (dark mode toggle). If needed, keep a static light theme only. Delete the button that toggled dark mode.
+
+register.html: remove onsubmit="handleSubmit(event)" and onclick="handleGuest(event)". Replace guest button with a normal <a href="/guest">. Link global CSS instead of the big inline style if possible (or keep minimal inline styles but prioritize using /static/styles.css).
+
+error.html: replace <button onclick="window.location.href='{{.Redirect}}'"> with a normal <a href="{{.Redirect}}" class="submit-btn">Back to Home</a>.
+
+6.2 Fix post.html (currently wrong)
+
+Overwrite templates/post.html with a proper “view post” page that:
+
+Shows Title, Author, Content.
+
+Shows counts {{.Likes}} and {{.Dislikes}}.
+
+Has two forms (no JS), each method="POST":
+
+Like form → action="/like" with a hidden post_id and a submit button.
+
+Dislike form → action="/dislike" with the hidden post_id.
+
+Lists comments {{range .Comments}} (Author + Content) and below it:
+
+Per-comment like/dislike counts.
+
+Two comment interaction forms:
+action="/comment/like", hidden comment_id; and action="/comment/dislike", hidden comment_id.
+Only render these forms if the current user is registered; otherwise show disabled text.
+
+A “Add comment” form (POST to /post/{{.PostID}}) visible for registered users; show a notice for guests.
+
+Use classes already in static/styles.css where possible.
+
+6.3 Keep/adjust other templates
+
+login.html: keep as is and ensure it posts to /login with username, email, password.
+
+create_post.html: keep form; ensure labels/inputs match handler (title, categories, content).
+
+filter.html: keep and display {{.FilterLabel}} + list of filtered posts.
+
+home.html: keep overall layout but remove dark-mode controls and any JS; “New Post” CTA must be hidden for guests (already conditionally hidden by template var).
+
+7) Styles
+
+Prefer static/styles.css across all pages. If a page has big inline <style>, move it into styles.css where feasible (don’t introduce JS). Keep semantic class names.
+
+8) Utilities & types
+
+In uuid.go, keep generating UUIDs.
+
+Ensure Register and Guest() set Lastseen as RFC3339 string (not time.Time value) before SafeWriter. If you continue to use SafeWriter, pass a struct with Lastseen string already formatted (alternatively, change User.Lastseen type to string to match DB).
+
+Keep HashPassword using bcrypt with sensible cost.
+
+9) Dockerize
+
+Add a Dockerfile (multi-stage):
+
+Builder stage golang:1.22-alpine:
+
+WORKDIR /app
+
+Copy go.mod, go.sum, then go mod download
+
+Copy the rest
+
+CGO_ENABLED=1 GOOS=linux go build -o forum
+
+Runtime stage alpine:3.19:
+
+WORKDIR /app
+
+Copy forum binary and the folders templates/, static/, sql/
+
+EXPOSE 8080
+
+CMD ["./forum"]
+
+Add .dockerignore to exclude .git, build artifacts, etc.
+
+Ensure Makefile’s build-docker and run-docker targets work with this Dockerfile.
+
+10) Tests (minimal but useful)
+
+Add utils/hashing_test.go: test HashPassword + successful bcrypt compare.
+
+Add a small test that GenerateUserID() returns non-empty and unique values.
+
+(Optional) add handler table tests with httptest for /login (bad creds), /register (duplicate email), and /filter with a fake in-memory DB or a temp file DB.
+
+11) Meet the audit checklist
+
+Implement and verify all items in the project “audit questions”, including:
+
+Register asks for email + password, prevents duplicates; login detects wrong creds; sessions exist; only one active session; guests cannot post/comment/like; registered users can; likes/dislikes update counts; filters work for category/myposts/mylikes; proper HTTP methods (POST where required); no crashes; 400/500 handled; Docker builds and runs; password encrypted; only allowed packages used. Create/fix anything necessary so all checks pass.
+
+12) Final polish
+
+Replace any remaining JS usage (remove entirely).
+
+Ensure every template links /static/styles.css and renders without JS.
+
+Confirm unknown URLs render the error template with 404 (not redirect).
+
+On server errors, render the error template with 500.
+
+Add a simple 400 page via RenderError when form validation fails.
+
+13) Run instructions (for the README)
+
+Local: go run main.go → visit http://localhost:8080/login.
+
+Docker: make build-docker && make run-docker → visit http://localhost:8080.
+
+Deliverables
+
+Updated Go source files in utils/ and main.go.
+
+Updated templates (no JS), updated styles.css.
+
+Updated sql/tables.sql with new tables/indexes.
+
+New Dockerfile + .dockerignore.
+
+Minimal tests in utils/.
+
+Short README with run steps.
